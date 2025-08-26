@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ExtraTranslation">
+    <string name="app_name">SimpleNotes</string>
+
+    <string name="no_items">No notes found</string>
+    <string name="share_using">Share to…</string>
+    <string name="err_empty">Title cannot be empty</string>
+
+    <string name="menu_del">Delete</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_rename">Rename</string>
+
+    <string name="hint_new_name">New Title</string>
+    <string name="hint_note">Notes…</string>
+
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_rename">Rename</string>
+    <string name="dialog_save">Save</string>
+
+    <string name="title_new">New Note</string>
+    <string name="title_save_as">Save as…</string>
+    <string name="title_rename">Rename</string>
+</resources>
