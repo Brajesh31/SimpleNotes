@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible Android app issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device model and Android version
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or screenshots
