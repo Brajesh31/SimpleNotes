@@ -46,11 +46,11 @@ class NotesAdapter(
 
         if (listener != null) {
             holder.root.setOnClickListener {
-                val current = data.getOrNull(holder.bindingAdapterPosition) ?: return@setOnClickListener
+                val current = data.getOrNull(holder.adapterPosition) ?: return@setOnClickListener
                 listener.onClick(current)
             }
             holder.root.setOnLongClickListener {
-                val current = data.getOrNull(holder.bindingAdapterPosition) ?: return@setOnLongClickListener true
+                val current = data.getOrNull(holder.adapterPosition) ?: return@setOnLongClickListener true
                 listener.onLongClick(current, holder.root)
                 true
             }
