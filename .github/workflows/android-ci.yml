@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  assemble:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,9 +19,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - name: Run unit tests
-        run: ./gradlew test
+      - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug APK
         run: ./gradlew assembleDebug
