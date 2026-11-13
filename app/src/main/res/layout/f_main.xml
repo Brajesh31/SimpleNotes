@@ -28,7 +28,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/action_new_note" />
+            android:importantForAccessibility="no" />
 
         <TextView
             android:layout_margin="8dp"
@@ -50,6 +50,6 @@
         android:src="@drawable/sticky_notes_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:importantForAccessibility="no" />
+        android:contentDescription="@string/action_new_note" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

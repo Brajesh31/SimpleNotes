@@ -23,14 +23,14 @@ import com.makuta.simplenotes.Utils.visible
 import com.makuta.simplenotes.adapter.NotesAdapter
 import com.makuta.simplenotes.databinding.DRenameBinding
 import com.makuta.simplenotes.databinding.FMainBinding
-import java.io.File
+import com.makuta.simplenotes.db.Note
 
 class FMain : Fragment(), NotesAdapter.OnNoteActionListener, PopupMenu.OnMenuItemClickListener {
 
     private val vm: MainVM by viewModels()
     private lateinit var binding: FMainBinding
     private lateinit var notesAdapter: NotesAdapter
-    private var currItem: String? = null
+    private var currentFilename: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,69 +49,66 @@ class FMain : Fragment(), NotesAdapter.OnNoteActionListener, PopupMenu.OnMenuIte
         binding.list.layoutManager = LinearLayoutManager(requireContext())
         binding.list.adapter = notesAdapter
 
-        //notesAdapter.addData((1..10).map { "Item $it" })
-
         binding.fabNew.setOnClickListener {
             findNavController().navigate(
                 R.id.action_FMain_to_FEditor,
-                bundleOf(
-                    BUNDLE_FILE to ""
-                )
+                bundleOf(BUNDLE_FILE to "")
             )
         }
     }
 
     override fun onStart() {
         super.onStart()
-        vm.notes.observe(this) {
-            if (!it.isNullOrEmpty()) {
-                notesAdapter.addData(it)
+
+        vm.notes.observe(viewLifecycleOwner) { notes ->
+            if (!notes.isNullOrEmpty()) {
+                notesAdapter.addData(notes)
                 binding.list.visible()
                 binding.empty.gone()
             } else {
+                notesAdapter.clear()
                 binding.list.gone()
                 binding.empty.visible()
             }
         }
-        vm.note.observe(this) {
-            if (it != null) {
-                val f = File(requireContext().filesDir, it.filename)
-                val intent = Intent(Intent.ACTION_SEND)
-                val shareBody = f.readText()
-                intent.setType("text/plain")
-                intent.putExtra(
-                    Intent.EXTRA_SUBJECT,
-                    it.title
-                )
-                intent.putExtra(Intent.EXTRA_TEXT, shareBody)
-                startActivity(
-                    Intent.createChooser(
-                        intent,
-                        getString(R.string.share_using)
-                    )
-                )
+
+        vm.sharedNote.observe(viewLifecycleOwner) { shared ->
+            if (shared != null) {
+                vm.consumeSharedNote()
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, shared.title)
+                    putExtra(Intent.EXTRA_TEXT, shared.content)
+                }
+                startActivity(Intent.createChooser(intent, getString(R.string.share_using)))
             }
         }
+
+        vm.shareError.observe(viewLifecycleOwner) { failed ->
+            if (failed == true) {
+                Toast.makeText(requireContext(), R.string.err_share, Toast.LENGTH_SHORT).show()
+            }
+        }
+
         vm.load()
     }
 
     override fun onStop() {
         super.onStop()
-        vm.notes.removeObservers(this)
-        vm.note.removeObservers(this)
+        vm.notes.removeObservers(viewLifecycleOwner)
+        vm.sharedNote.removeObservers(viewLifecycleOwner)
+        vm.shareError.removeObservers(viewLifecycleOwner)
     }
 
-    override fun onClick(name: String) {
+    override fun onClick(note: Note) {
         findNavController().navigate(
             R.id.action_FMain_to_FEditor,
-            bundleOf(
-                BUNDLE_FILE to name
-            )
+            bundleOf(BUNDLE_FILE to note.filename)
         )
     }
 
-    override fun onLongClick(name: String, view: View) {
-        currItem = name
+    override fun onLongClick(note: Note, view: View) {
+        currentFilename = note.filename
         val popupMenu = PopupMenu(requireContext(), view)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             popupMenu.setForceShowIcon(true)
@@ -122,50 +119,43 @@ class FMain : Fragment(), NotesAdapter.OnNoteActionListener, PopupMenu.OnMenuIte
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
-        if (item != null) {
-            when (item.itemId) {
-                R.id.menu_del -> {
-                    if (!currItem.isNullOrEmpty()) {
-                        vm.delete(currItem!!)
-                        notesAdapter.del(currItem!!)
-                    }
-                    return true
-                }
+        val filename = currentFilename ?: return false
 
-                R.id.menu_share -> {
-                    if (!currItem.isNullOrEmpty()) {
-                        vm.share(currItem!!)
-                    }
-                    return true
-                }
+        when (item?.itemId) {
+            R.id.menu_del -> {
+                vm.delete(filename)
+                notesAdapter.del(filename)
+                return true
+            }
 
-                R.id.menu_rename -> {
-                    val dialogBinding = DRenameBinding.inflate(requireActivity().layoutInflater)
-                    MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(R.string.title_rename)
-                        .setView(dialogBinding.root)
-                        .setPositiveButton(R.string.dialog_rename) { d, _ ->
-                            val t = dialogBinding.editor.text.toString()
-                            if (t.isNotEmpty()) {
-                                vm.rename(currItem!!, t)
-                                d.dismiss()
-                            } else {
-                                Toast.makeText(
-                                    requireContext(),
-                                    R.string.err_empty,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+            R.id.menu_share -> {
+                vm.share(filename)
+                return true
+            }
+
+            R.id.menu_rename -> {
+                val dialogBinding = DRenameBinding.inflate(requireActivity().layoutInflater)
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.title_rename)
+                    .setView(dialogBinding.root)
+                    .setPositiveButton(R.string.dialog_rename) { dialog, _ ->
+                        val title = dialogBinding.editor.text?.toString()?.trim().orEmpty()
+                        if (title.isNotEmpty()) {
+                            vm.rename(filename, title)
+                            dialog.dismiss()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.err_empty,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        .setNegativeButton(R.string.dialog_cancel) { d, _ ->
-                            d.dismiss()
-                        }
-                        .show()
-                    return true
-                }
+                    }
+                    .setNegativeButton(R.string.dialog_cancel) { dialog, _ -> dialog.dismiss() }
+                    .show()
+                return true
             }
         }
         return false
     }
-
 }
