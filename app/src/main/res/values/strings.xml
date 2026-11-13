@@ -4,6 +4,10 @@
     <string name="no_items">No notes found</string>
     <string name="share_using">Share to…</string>
     <string name="err_empty">Title cannot be empty</string>
+    <string name="err_load_note">This note could not be loaded.</string>
+    <string name="err_save_note">The note could not be saved. Please try again.</string>
+    <string name="err_share">The note could not be shared because its content is unavailable.</string>
+    <string name="action_new_note">Create a new note</string>
 
     <string name="menu_del">Delete</string>
     <string name="menu_save">Save</string>

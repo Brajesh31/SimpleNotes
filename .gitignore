@@ -1,51 +1,37 @@
-<<<<<<< HEAD
-# Gradle files
+# Gradle and Android build output
 .gradle/
 build/
+app/build/
+**/build/
 
-# Local configuration file (sdk path, etc)
+# Android SDK local configuration
 local.properties
 
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-output.json
-
-# IntelliJ
-*.iml
+# Android Studio / IntelliJ
 .idea/
+*.iml
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Native build and profiling output
+.externalNativeBuild/
+.cxx/
+*.hprof
+
+# Logs and generated APK metadata
+*.log
+captures/
+*.apk
+output.json
+
+# Local signing material and credentials
 *.jks
 *.keystore
+keystore.properties
 
-# Google Services (e.g. APIs or Firebase)
+# Service configuration that may contain credentials
 google-services.json
 
-# Android Profiling
-*.hprof
-=======
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Operating system files
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
->>>>>>> dea4061 ([0.1] init)

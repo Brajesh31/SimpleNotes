@@ -28,7 +28,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:importantForAccessibility="no" />
+            android:contentDescription="@string/action_new_note" />
 
         <TextView
             android:layout_margin="8dp"

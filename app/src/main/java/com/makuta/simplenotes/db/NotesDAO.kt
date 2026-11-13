@@ -10,11 +10,11 @@ import androidx.room.Update
 @Dao
 interface NotesDAO {
 
-    @Query("SELECT title FROM notes")
-    suspend fun all(): List<String>
+    @Query("SELECT * FROM notes ORDER BY uid DESC")
+    suspend fun all(): List<Note>
 
-    @Query("SELECT * FROM notes WHERE title = (:title)")
-    suspend fun pull(title: String): Note?
+    @Query("SELECT * FROM notes WHERE filename = :filename LIMIT 1")
+    suspend fun pullByFilename(filename: String): Note?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun put(note: Note)

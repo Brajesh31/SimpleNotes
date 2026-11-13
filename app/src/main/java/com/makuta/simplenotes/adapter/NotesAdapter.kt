@@ -4,50 +4,59 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.makuta.simplenotes.db.Note
 import com.makuta.simplenotes.databinding.INoteBinding
 
 class NotesAdapter(
     private val listener: OnNoteActionListener? = null
 ) : RecyclerView.Adapter<NotesAdapter.NotesHolder>() {
 
-    private val data = ArrayList<String>()
+    private val data = ArrayList<Note>()
 
-    fun addData(items: List<String>) {
+    fun addData(items: List<Note>) {
         data.clear()
         data.addAll(items)
-        notifyItemRangeChanged(0, items.size)
+        // The list may grow from zero items. A range-changed notification does
+        // not announce newly inserted rows, so refresh the adapter's data set.
+        notifyDataSetChanged()
     }
 
-    fun del(item: String) {
-        val i = data.indexOf(item)
-        if (i >= 0) {
-            data.remove(item)
-            notifyItemRemoved(i)
+    fun del(filename: String) {
+        val index = data.indexOfFirst { it.filename == filename }
+        if (index >= 0) {
+            data.removeAt(index)
+            notifyItemRemoved(index)
         }
     }
 
     fun clear() {
-        val c = data.size
+        val count = data.size
         data.clear()
-        notifyItemRangeRemoved(0, c)
+        if (count > 0) notifyItemRangeRemoved(0, count)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotesHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = INoteBinding.inflate(layoutInflater, parent, false)
-        return NotesHolder(binding)
+        val inflater = LayoutInflater.from(parent.context)
+        return NotesHolder(INoteBinding.inflate(inflater, parent, false))
     }
 
     override fun onBindViewHolder(holder: NotesHolder, position: Int) {
-        holder.text.text = data[position]
+        val note = data[position]
+        holder.text.text = note.title
+
         if (listener != null) {
             holder.root.setOnClickListener {
-                listener.onClick(data[position])
+                val current = data.getOrNull(holder.bindingAdapterPosition) ?: return@setOnClickListener
+                listener.onClick(current)
             }
             holder.root.setOnLongClickListener {
-                listener.onLongClick(data[position], holder.root)
+                val current = data.getOrNull(holder.bindingAdapterPosition) ?: return@setOnLongClickListener true
+                listener.onLongClick(current, holder.root)
                 true
             }
+        } else {
+            holder.root.setOnClickListener(null)
+            holder.root.setOnLongClickListener(null)
         }
     }
 
@@ -59,7 +68,7 @@ class NotesAdapter(
     }
 
     interface OnNoteActionListener {
-        fun onClick(name: String)
-        fun onLongClick(name: String, view: View)
+        fun onClick(note: Note)
+        fun onLongClick(note: Note, view: View)
     }
 }
